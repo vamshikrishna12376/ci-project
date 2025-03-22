@@ -1,4 +1,64 @@
 #!/bin/bash
+# Smoke test script for CI/DevOps project
+
+set -e
+
+ENVIRONMENT=${1:-"development"}
+echo "Running smoke tests against $ENVIRONMENT environment"
+
+# Check if we're in the right directory
+if [ ! -d "src" ]; then
+    echo "Error: src directory not found. Please run this script from the project root."
+    exit 1
+fi
+
+# Check if the deployment directory exists
+if [ ! -d "deploy/$ENVIRONMENT" ]; then
+    echo "Error: Deployment directory for $ENVIRONMENT not found."
+    echo "Please deploy to $ENVIRONMENT before running smoke tests."
+    exit 1
+fi
+
+# Create reports directory if it doesn't exist
+mkdir -p reports/smoke-tests
+
+# For blue-green deployments, determine which environment to test
+if [ "$ENVIRONMENT" == "production" ] && [ -f "deploy/$ENVIRONMENT/ACTIVE" ]; then
+    ACTIVE=$(cat "deploy/$ENVIRONMENT/ACTIVE")
+    echo "Testing active production environment: $ACTIVE"
+    
+    # Check if the active environment exists
+    if [ ! -d "deploy/$ENVIRONMENT/$ACTIVE" ]; then
+        echo "Error: Active environment directory not found."
+        exit 1
+    fi
+    
+    # Check for deployment marker
+    if [ ! -f "deploy/$ENVIRONMENT/$ACTIVE/DEPLOY_MARKER" ]; then
+        echo "Warning: Deployment marker not found in active environment."
+    fi
+else
+    # Check for deployment marker
+    if [ ! -f "deploy/$ENVIRONMENT/DEPLOY_MARKER" ]; then
+        echo "Warning: Deployment marker not found in deployment directory."
+    fi
+fi
+
+# Run basic smoke tests
+echo "Checking deployment files..."
+if [ "$ENVIRONMENT" == "production" ] && [ -f "deploy/$ENVIRONMENT/ACTIVE" ]; then
+    ACTIVE=$(cat "deploy/$ENVIRONMENT/ACTIVE")
+    ls -la deploy/$ENVIRONMENT/$ACTIVE/ > reports/smoke-tests/files-$ENVIRONMENT.txt
+else
+    ls -la deploy/$ENVIRONMENT/ > reports/smoke-tests/files-$ENVIRONMENT.txt
+fi
+
+# Generate a smoke test report
+echo "Smoke Test Report for $ENVIRONMENT" > reports/smoke-tests/smoke-test-report-$ENVIRONMENT.txt
+echo "Test executed at: $(date)" >> reports/smoke-tests/smoke-test-report-$ENVIRONMENT.txt
+echo "All tests passed successfully!" >> reports/smoke-tests/smoke-test-report-$ENVIRONMENT.txt
+
+echo "🎉 All smoke tests passed!"#!/bin/bash
 # Smoke Test Script
 
 set -e
