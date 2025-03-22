@@ -1,0 +1,197 @@
+pipeline {
+    agent {
+        docker {
+            image 'python:3.9-slim'
+        }
+    }
+
+    environment {
+        SONAR_SERVER = credentials('sonar-server-url')
+        SONAR_TOKEN = credentials('sonar-token')
+        DOCKER_REGISTRY = credentials('docker-registry')
+        AWS_CREDENTIALS = credentials('aws-credentials')
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Static Code Analysis') {
+            steps {
+                sh '''
+                    pip install pylint
+                    pylint --output-format=parseable --reports=no src/ > reports/pylint-report.txt || true
+                '''
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'chmod +x scripts/build.sh'
+                sh './scripts/build.sh'
+            }
+        }
+
+        stage('Security Scan') {
+            steps {
+                sh '''
+                    pip install bandit
+                    bandit -r src/ -f json -o reports/bandit-report.json || true
+                '''
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'chmod +x scripts/test.sh'
+                sh './scripts/test.sh'
+            }
+            post {
+                always {
+                    junit 'reports/test-reports/*.xml'
+                    publishHTML([
+                        allowMissing: true,
+                        alwaysLinkToLastBuild: true,
+                        keepAll: true,
+                        reportDir: 'reports/coverage',
+                        reportFiles: 'index.html',
+                        reportName: 'Coverage Report'
+                    ])
+                }
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    sh '''
+                        sonar-scanner \
+                            -Dsonar.projectKey=${JOB_NAME} \
+                            -Dsonar.sources=src/main \
+                            -Dsonar.tests=src/test \
+                            -Dsonar.python.coverage.reportPaths=reports/coverage/coverage.xml \
+                            -Dsonar.python.xunit.reportPath=reports/test-reports/junit.xml
+                    '''
+                }
+                timeout(time: 10, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        stage('Docker Build & Scan') {
+            steps {
+                sh 'docker build -t ci-devops-app:${BUILD_NUMBER} -f docker/Dockerfile .'
+                sh 'docker tag ci-devops-app:${BUILD_NUMBER} ci-devops-app:latest'
+
+                // Scan Docker image for vulnerabilities
+                sh '''
+                    docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+                        aquasec/trivy image --format json --output reports/trivy-report.json \
+                        ci-devops-app:${BUILD_NUMBER}
+                '''
+            }
+        }
+
+        stage('Performance Test') {
+            steps {
+                sh '''
+                    pip install locust
+                    locust -f performance/locustfile.py --headless -u 10 -r 2 --run-time 1m --host http://localhost:8080 --html reports/performance-report.html
+                '''
+            }
+            post {
+                always {
+                    publishHTML([
+                        allowMissing: true,
+                        alwaysLinkToLastBuild: true,
+                        keepAll: true,
+                        reportDir: 'reports',
+                        reportFiles: 'performance-report.html',
+                        reportName: 'Performance Test Report'
+                    ])
+                }
+            }
+        }
+
+        stage('Push to Registry') {
+            when {
+                anyOf {
+                    branch 'develop'
+                    branch 'main'
+                }
+            }
+            steps {
+                sh '''
+                    docker tag ci-devops-app:${BUILD_NUMBER} ${DOCKER_REGISTRY}/ci-devops-app:${BUILD_NUMBER}
+                    docker tag ci-devops-app:${BUILD_NUMBER} ${DOCKER_REGISTRY}/ci-devops-app:latest
+                    docker push ${DOCKER_REGISTRY}/ci-devops-app:${BUILD_NUMBER}
+                    docker push ${DOCKER_REGISTRY}/ci-devops-app:latest
+                '''
+            }
+        }
+
+        stage('Deploy to Staging') {
+            when {
+                branch 'develop'
+            }
+            steps {
+                sh 'chmod +x scripts/deploy.sh'
+                sh './scripts/deploy.sh staging'
+
+                // Run smoke tests after deployment
+                sh 'chmod +x scripts/smoke-test.sh'
+                sh './scripts/smoke-test.sh staging'
+            }
+        }
+
+        stage('Deploy to Production') {
+            when {
+                branch 'main'
+            }
+            steps {
+                // Manual approval step
+                input message: 'Deploy to production?', ok: 'Deploy'
+
+                // Blue/Green deployment
+                sh 'chmod +x scripts/blue-green-deploy.sh'
+                sh './scripts/blue-green-deploy.sh production'
+
+                // Run smoke tests after deployment
+                sh 'chmod +x scripts/smoke-test.sh'
+                sh './scripts/smoke-test.sh production'
+            }
+        }
+    }
+
+    post {
+        always {
+            sh 'chmod +x jenkins/post-build.sh'
+            sh './jenkins/post-build.sh'
+
+            // Archive reports
+            archiveArtifacts artifacts: 'reports/**/*', allowEmptyArchive: true
+
+            // Send notifications
+            emailext (
+                subject: "${currentBuild.result}: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
+                body: """<p>${currentBuild.result}: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
+                <p>Check console output at <a href='${env.BUILD_URL}'>${env.JOB_NAME} [${env.BUILD_NUMBER}]</a></p>""",
+                recipientProviders: [[$class: 'DevelopersRecipientProvider']]
+            )
+        }
+        success {
+            slackSend channel: '#ci-builds',
+                      color: 'good',
+                      message: "SUCCESS: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})"
+        }
+        failure {
+            slackSend channel: '#ci-builds',
+                      color: 'danger',
+                      message: "FAILURE: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})"
+        }
+    }
+}

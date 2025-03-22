@@ -1,0 +1,45 @@
+# Database Configuration
+
+# Development environment
+development:
+  driver: postgresql
+  host: localhost
+  port: 5432
+  database: ci_devops_dev
+  username: postgres
+  password: postgres
+  pool: 5
+  timeout: 5000
+
+# Test environment
+test:
+  driver: postgresql
+  host: localhost
+  port: 5432
+  database: ci_devops_test
+  username: postgres
+  password: postgres
+  pool: 5
+  timeout: 5000
+
+# Staging environment
+staging:
+  driver: postgresql
+  host: ${DB_HOST:db.staging.example.com}
+  port: ${DB_PORT:5432}
+  database: ${DB_NAME:ci_devops_staging}
+  username: ${DB_USER:app_user}
+  password: ${DB_PASSWORD:password}
+  pool: 10
+  timeout: 5000
+
+# Production environment
+production:
+  driver: postgresql
+  host: ${DB_HOST:db.production.example.com}
+  port: ${DB_PORT:5432}
+  database: ${DB_NAME:ci_devops_production}
+  username: ${DB_USER:app_user}
+  password: ${DB_PASSWORD:password}
+  pool: 20
+  timeout: 5000

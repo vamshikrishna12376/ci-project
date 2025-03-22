@@ -1,0 +1,262 @@
+openapi: 3.0.3
+info:
+  title: CI/DevOps Project API
+  description: |
+    API documentation for the CI/DevOps Project.
+    This API provides endpoints for managing data and monitoring application health.
+  version: 1.0.0
+  contact:
+    name: DevOps Team
+    email: devops@example.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.example.com/v1
+    description: Production server
+  - url: https://staging-api.example.com/v1
+    description: Staging server
+  - url: http://localhost:8080/v1
+    description: Local development server
+
+tags:
+  - name: health
+    description: Health check endpoints
+  - name: data
+    description: Data management endpoints
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      description: Returns the health status of the application
+      operationId: getHealth
+      tags:
+        - health
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /data:
+    get:
+      summary: Get all data
+      description: Returns a list of all data items
+      operationId: getData
+      tags:
+        - data
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of items to return
+          required: false
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: offset
+          in: query
+          description: Number of items to skip
+          required: false
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataList'
+        '400':
+          description: Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+    post:
+      summary: Create new data
+      description: Creates a new data item
+      operationId: createData
+      tags:
+        - data
+      requestBody:
+        description: Data item to create
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DataItem'
+      responses:
+        '201':
+          description: Item created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataCreationResponse'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /data/{id}:
+    get:
+      summary: Get data by ID
+      description: Returns a single data item by ID
+      operationId: getDataById
+      tags:
+        - data
+      parameters:
+        - name: id
+          in: path
+          description: ID of the data item to retrieve
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataItem'
+        '404':
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+          example: healthy
+        timestamp:
+          type: string
+          format: date-time
+          example: '2023-04-01T12:00:00Z'
+        version:
+          type: string
+          example: '1.0.0'
+      required:
+        - status
+        - timestamp
+        - version
+
+    DataItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: 'Item 1'
+        created_at:
+          type: string
+          format: date-time
+          example: '2023-04-01T12:00:00Z'
+      required:
+        - name
+
+    DataList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/DataItem'
+        count:
+          type: integer
+          format: int32
+          example: 3
+        timestamp:
+          type: string
+          format: date-time
+          example: '2023-04-01T12:00:00Z'
+      required:
+        - data
+        - count
+        - timestamp
+
+    DataCreationResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: '123e4567-e89b-12d3-a456-426614174000'
+        created:
+          type: boolean
+          example: true
+        timestamp:
+          type: string
+          format: date-time
+          example: '2023-04-01T12:00:00Z'
+        data:
+          $ref: '#/components/schemas/DataItem'
+      required:
+        - id
+        - created
+        - timestamp
+        - data
+
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+          example: 404
+        message:
+          type: string
+          example: 'Resource not found'
+        timestamp:
+          type: string
+          format: date-time
+          example: '2023-04-01T12:00:00Z'
+      required:
+        - code
+        - message
+        - timestamp

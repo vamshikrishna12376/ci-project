@@ -1,0 +1,30 @@
+{
+  "name": "ci-devops-project",
+  "version": "1.0.0",
+  "description": "A comprehensive CI/CD and DevOps implementation project",
+  "main": "src/main/app.py",
+  "scripts": {
+    "build": "./scripts/build.sh",
+    "test": "./scripts/test.sh",
+    "deploy": "./scripts/deploy.sh",
+    "start": "python src/main/app.py"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/ci-devops-project.git"
+  },
+  "keywords": [
+    "devops",
+    "ci",
+    "cd",
+    "terraform",
+    "docker",
+    "jenkins"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/yourusername/ci-devops-project/issues"
+  },
+  "homepage": "https://github.com/yourusername/ci-devops-project#readme"
+}
