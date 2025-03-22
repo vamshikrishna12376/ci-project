@@ -47,12 +47,12 @@ jobs:
         if [ ! -f scripts/build.sh ]; then
           mkdir -p scripts
           cat > scripts/build.sh << 'EOL'
-        #!/bin/bash
-        echo "Building CI/DevOps project..."
-        mkdir -p build
-        cp -r src/* build/ 2>/dev/null || echo "No source files to copy"
-        echo "Build completed successfully!"
-        EOL
+#!/bin/bash
+echo "Building CI/DevOps project..."
+mkdir -p build
+cp -r src/* build/ 2>/dev/null || echo "No source files to copy"
+echo "Build completed successfully!"
+EOL
         fi
         chmod +x scripts/build.sh
 
@@ -73,14 +73,14 @@ jobs:
         if [ ! -f scripts/test.sh ]; then
           mkdir -p scripts
           cat > scripts/test.sh << 'EOL'
-        #!/bin/bash
-        echo "Running tests for CI/DevOps project..."
-        mkdir -p reports/test-reports
-        mkdir -p reports/coverage
-        echo "Test execution completed at $(date)" > reports/test-reports/test_summary.txt
-        echo "All tests passed successfully!" >> reports/test-reports/test_summary.txt
-        echo "Tests completed successfully!"
-        EOL
+#!/bin/bash
+echo "Running tests for CI/DevOps project..."
+mkdir -p reports/test-reports
+mkdir -p reports/coverage
+echo "Test execution completed at $(date)" > reports/test-reports/test_summary.txt
+echo "All tests passed successfully!" >> reports/test-reports/test_summary.txt
+echo "Tests completed successfully!"
+EOL
         fi
         chmod +x scripts/test.sh
 
@@ -94,11 +94,11 @@ jobs:
         if [ ! -f docker/Dockerfile ]; then
           mkdir -p docker
           cat > docker/Dockerfile << 'EOL'
-        FROM python:3.9-slim
-        WORKDIR /app
-        COPY src/ /app/
-        CMD ["python", "main/app.py"]
-        EOL
+FROM python:3.9-slim
+WORKDIR /app
+COPY src/ /app/
+CMD ["python", "main/app.py"]
+EOL
         fi
 
     - name: Build Docker image
@@ -143,12 +143,12 @@ jobs:
         if [ ! -f scripts/deploy.sh ]; then
           mkdir -p scripts
           cat > scripts/deploy.sh << 'EOL'
-        #!/bin/bash
-        ENVIRONMENT=${1:-"development"}
-        echo "Deploying CI/DevOps project to $ENVIRONMENT environment..."
-        mkdir -p deploy/$ENVIRONMENT
-        echo "Deployment completed successfully to $ENVIRONMENT environment!"
-        EOL
+#!/bin/bash
+ENVIRONMENT=${1:-"development"}
+echo "Deploying CI/DevOps project to $ENVIRONMENT environment..."
+mkdir -p deploy/$ENVIRONMENT
+echo "Deployment completed successfully to $ENVIRONMENT environment!"
+EOL
         fi
         chmod +x scripts/deploy.sh
 
@@ -162,14 +162,14 @@ jobs:
         if [ ! -f scripts/smoke-test.sh ]; then
           mkdir -p scripts
           cat > scripts/smoke-test.sh << 'EOL'
-        #!/bin/bash
-        ENVIRONMENT=${1:-"development"}
-        echo "Running smoke tests against $ENVIRONMENT environment"
-        mkdir -p reports/smoke-tests
-        echo "Smoke Test Report for $ENVIRONMENT" > reports/smoke-tests/smoke-test-report-$ENVIRONMENT.txt
-        echo "All tests passed successfully!" >> reports/smoke-tests/smoke-test-report-$ENVIRONMENT.txt
-        echo "🎉 All smoke tests passed!"
-        EOL
+#!/bin/bash
+ENVIRONMENT=${1:-"development"}
+echo "Running smoke tests against $ENVIRONMENT environment"
+mkdir -p reports/smoke-tests
+echo "Smoke Test Report for $ENVIRONMENT" > reports/smoke-tests/smoke-test-report-$ENVIRONMENT.txt
+echo "All tests passed successfully!" >> reports/smoke-tests/smoke-test-report-$ENVIRONMENT.txt
+echo "🎉 All smoke tests passed!"
+EOL
         fi
         chmod +x scripts/smoke-test.sh
 
@@ -199,14 +199,14 @@ jobs:
         if [ ! -f scripts/blue-green-deploy.sh ]; then
           mkdir -p scripts
           cat > scripts/blue-green-deploy.sh << 'EOL'
-        #!/bin/bash
-        ENVIRONMENT=${1:-"production"}
-        echo "Performing Blue-Green deployment to $ENVIRONMENT environment"
-        mkdir -p deploy/$ENVIRONMENT/blue
-        mkdir -p deploy/$ENVIRONMENT/green
-        echo "blue" > "deploy/$ENVIRONMENT/ACTIVE"
-        echo "Blue-Green deployment completed successfully to $ENVIRONMENT environment!"
-        EOL
+#!/bin/bash
+ENVIRONMENT=${1:-"production"}
+echo "Performing Blue-Green deployment to $ENVIRONMENT environment"
+mkdir -p deploy/$ENVIRONMENT/blue
+mkdir -p deploy/$ENVIRONMENT/green
+echo "blue" > "deploy/$ENVIRONMENT/ACTIVE"
+echo "Blue-Green deployment completed successfully to $ENVIRONMENT environment!"
+EOL
         fi
         chmod +x scripts/blue-green-deploy.sh
 
@@ -220,14 +220,14 @@ jobs:
         if [ ! -f scripts/smoke-test.sh ]; then
           mkdir -p scripts
           cat > scripts/smoke-test.sh << 'EOL'
-        #!/bin/bash
-        ENVIRONMENT=${1:-"development"}
-        echo "Running smoke tests against $ENVIRONMENT environment"
-        mkdir -p reports/smoke-tests
-        echo "Smoke Test Report for $ENVIRONMENT" > reports/smoke-tests/smoke-test-report-$ENVIRONMENT.txt
-        echo "All tests passed successfully!" >> reports/smoke-tests/smoke-test-report-$ENVIRONMENT.txt
-        echo "🎉 All smoke tests passed!"
-        EOL
+#!/bin/bash
+ENVIRONMENT=${1:-"development"}
+echo "Running smoke tests against $ENVIRONMENT environment"
+mkdir -p reports/smoke-tests
+echo "Smoke Test Report for $ENVIRONMENT" > reports/smoke-tests/smoke-test-report-$ENVIRONMENT.txt
+echo "All tests passed successfully!" >> reports/smoke-tests/smoke-test-report-$ENVIRONMENT.txt
+echo "🎉 All smoke tests passed!"
+EOL
         fi
         chmod +x scripts/smoke-test.sh
 
