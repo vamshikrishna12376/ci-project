@@ -217,6 +217,6 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 📞 Contact
 
-Your Name - your.email@example.com
+Email- vamshiiikrishnaaa@gmail.com
 
-Project Link: [https://github.com/yourusername/ci-devops-project](https://github.com/yourusername/ci-devops-project)
+Project Link: [https://github.com/yourusername/ci-devops-project](https://github.com/vamshikrishna12376/ci-devops-project)
