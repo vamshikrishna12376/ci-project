@@ -15,6 +15,9 @@ fi
 mkdir -p build
 
 # Copy source files to build directory
-cp -r src/* build/
+cp -r src/* build/ || {
+    echo "Error: Failed to copy source files to build directory."
+    exit 1
+}
 
 echo "Build completed successfully!"

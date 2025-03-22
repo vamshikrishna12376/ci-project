@@ -16,6 +16,10 @@ mkdir -p deploy/production/blue
 mkdir -p deploy/production/green
 
 # Set permissions for scripts
-chmod +x scripts/*.sh
+if [ -d "scripts" ]; then
+    chmod +x scripts/*.sh 2>/dev/null || echo "Warning: Could not set execute permissions on scripts."
+else
+    echo "Warning: scripts directory not found."
+fi
 
 echo "Project setup completed successfully!"

@@ -5,6 +5,9 @@ set -e
 
 echo "Starting CI/DevOps application..."
 
+# Create necessary directories
+mkdir -p logs
+
 # Run the application
 python main/app.py
 

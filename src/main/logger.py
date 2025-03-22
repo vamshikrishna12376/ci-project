@@ -9,6 +9,9 @@ import datetime
 from functools import wraps
 import traceback
 
+# Create logs directory if it doesn't exist
+os.makedirs('logs', exist_ok=True)
+
 # Define log levels
 LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO').upper()
 
@@ -25,12 +28,12 @@ logging.config.dictConfig({
             'datefmt': '%Y-%m-%d %H:%M:%S',
         },
         'json': {
-            'class': 'src.main.logger.JsonFormatter',
+            'class': 'main.logger.JsonFormatter',
         },
     },
     'filters': {
         'trace_id_filter': {
-            '()': 'src.main.logger.TraceIdFilter',
+            '()': 'main.logger.TraceIdFilter',
         },
     },
     'handlers': {

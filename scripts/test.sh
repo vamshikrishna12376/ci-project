@@ -17,7 +17,14 @@ mkdir -p reports/coverage
 
 # Run unit tests with pytest and generate coverage report
 echo "Running unit tests with coverage..."
-python -m pytest src/test -v --cov=src/main --cov-report=xml:reports/coverage/coverage.xml --cov-report=html:reports/coverage/html --junitxml=reports/test-reports/junit.xml
+# Install pytest and pytest-cov if not already installed
+pip install pytest pytest-cov || true
+python -m pytest src/test -v --cov=src/main --cov-report=xml:reports/coverage/coverage.xml --cov-report=html:reports/coverage/html --junitxml=reports/test-reports/junit.xml || {
+    echo "Tests failed with exit code $?"
+    echo "Test execution failed at $(date)" > reports/test-reports/test_summary.txt
+    echo "Some tests failed. Check the logs for details." >> reports/test-reports/test_summary.txt
+    exit 1
+}
 
 # Generate a test summary
 echo "Test execution completed at $(date)" > reports/test-reports/test_summary.txt
