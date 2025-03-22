@@ -1,0 +1,6 @@
+# Project dependencies
+pytest==7.4.0
+pytest-cov==4.1.0
+pylint==2.17.5
+bandit==1.7.5
+locust==2.15.1

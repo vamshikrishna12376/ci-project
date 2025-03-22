@@ -15,12 +15,13 @@ fi
 mkdir -p reports/test-reports
 mkdir -p reports/coverage
 
-# Run unit tests
-echo "Running unit tests..."
-python -m unittest discover -s src/test
+# Run unit tests with pytest and generate coverage report
+echo "Running unit tests with coverage..."
+python -m pytest src/test -v --cov=src/main --cov-report=xml:reports/coverage/coverage.xml --cov-report=html:reports/coverage/html --junitxml=reports/test-reports/junit.xml
 
-# Generate a simple test report
+# Generate a test summary
 echo "Test execution completed at $(date)" > reports/test-reports/test_summary.txt
 echo "All tests passed successfully!" >> reports/test-reports/test_summary.txt
+echo "Coverage report available in reports/coverage/" >> reports/test-reports/test_summary.txt
 
 echo "Tests completed successfully!"

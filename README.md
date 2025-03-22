@@ -18,15 +18,20 @@ This project showcases a complete DevOps toolchain implementation including:
 ## 🏗️ Project Structure
 
 ```
-ci-devops-project/
+ci-project/
 │── 📁 src/                  # Source code
 │   ├── 📁 main/             # Application logic
+│   │   ├── app.py          # Main application entry point
+│   │   ├── logger.py       # Logging configuration
 │   ├── 📁 test/             # Unit & Integration tests
+│       ├── test_app.py     # Tests for the application
 │
 │── 📁 scripts/              # Automation scripts
 │   ├── build.sh            # Script to build the project
 │   ├── test.sh             # Script to run tests
 │   ├── deploy.sh           # Deployment script
+│   ├── smoke-test.sh       # Smoke tests for deployments
+│   ├── blue-green-deploy.sh # Blue-Green deployment script
 │
 │── 📁 docker/               # Docker configurations
 │   ├── Dockerfile          # Docker image setup
@@ -39,18 +44,31 @@ ci-devops-project/
 │── 📁 terraform/            # Infrastructure as Code (AWS Setup)
 │   ├── main.tf             # Terraform main config
 │   ├── variables.tf        # Variables for AWS resources
+│   ├── monitoring.tf       # Monitoring resources
+│   ├── secrets.tf          # Secrets management
 │
 │── 📁 config/               # Configuration files
 │   ├── application.yml     # App configurations
 │   ├── database.yml        # DB configurations
 │
-│── 📁 reports/              # Reports from CI tests
+│── 📁 performance/          # Performance testing
+│   ├── locustfile.py       # Locust performance tests
+│
+│── 📁 docs/                 # Documentation
+│   ├── architecture.md     # Architecture documentation
+│   ├── 📁 api/              # API documentation
+│       ├── openapi.yaml    # OpenAPI/Swagger specification
+│
+│── 📁 reports/              # Reports from CI tests (generated)
 │   ├── test-reports/       # Unit & integration test reports
 │   ├── coverage/           # Code coverage reports
 │
 │── .github/                 # GitHub Actions
-│   ├── workflows/          # CI/CD workflows
-│   ├── ci.yml              # GitHub Actions CI Pipeline
+│   ├── 📁 workflows/        # CI/CD workflows
+│       ├── ci.yml          # GitHub Actions CI Pipeline
+│
+│── requirements.txt        # Python dependencies
+│── README.md               # Project documentation
 ```
 
 ## 🚀 Getting Started
@@ -58,56 +76,66 @@ ci-devops-project/
 ### Prerequisites
 
 - Docker and Docker Compose
-- Jenkins (for CI/CD pipeline)
-- Terraform (for infrastructure provisioning)
-- AWS CLI (configured with appropriate credentials)
 - Git
 - Python 3.9+
-- SonarQube (for code quality analysis)
+- Optional: Jenkins (for CI/CD pipeline)
+- Optional: Terraform (for infrastructure provisioning)
+- Optional: AWS CLI (configured with appropriate credentials)
 
 ### Installation
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/ci-devops-project.git
-   cd ci-devops-project
+   git clone https://github.com/yourusername/ci-project.git
+   cd ci-project
    ```
 
-2. Set up environment variables:
+2. Set up the project structure:
    ```bash
-   # Create a .env file for local development
-   cp config/env.example .env
-   # Edit the .env file with your configuration
+   chmod +x scripts/setup.sh
+   ./scripts/setup.sh
    ```
 
-3. Build the application:
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. Build the application:
    ```bash
    ./scripts/build.sh
    ```
 
-4. Run tests:
+5. Run tests:
    ```bash
    ./scripts/test.sh
    ```
 
-5. Run the application locally:
+6. Run the application locally:
    ```bash
    python src/main/app.py
    ```
 
-6. Deploy infrastructure (requires AWS credentials):
+### Docker Setup
+
+1. Build the Docker image:
    ```bash
-   cd terraform
-   terraform init
-   terraform plan
-   terraform apply
+   docker build -t ci-project-app -f docker/Dockerfile .
    ```
 
-7. Run performance tests:
+2. Run the container:
    ```bash
-   pip install locust
-   locust -f performance/locustfile.py --web-host=localhost
+   docker run -p 8080:8080 ci-project-app
    ```
+
+### CI/CD Pipeline
+
+The project includes a GitHub Actions workflow in `.github/workflows/ci.yml` that:
+- Builds the application
+- Runs tests
+- Performs static code analysis
+- Builds and scans Docker images
+- Deploys to staging and production environments
 
 ## 🔄 CI/CD Pipeline
 
